@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "module": "index.js",
   "devDependencies": {
-    "rollup": "^0.64.0"
+    "rollup": "^0.64.0",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-uglify": "^6.0.0"
   },
   "scripts": {
     "build": "rollup -c",

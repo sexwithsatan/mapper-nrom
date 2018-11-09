@@ -8,7 +8,7 @@ const production = !process.env.ROLLUP_WATCH
 
 export default {
   experimentalCodeSplitting: true,
-  input: 'src/allocate.js'
+  input: 'src/allocate.js',
   output: {
     file: manifest.module,
     format: 'es',
