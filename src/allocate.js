@@ -28,7 +28,7 @@ async function allocate(rom) {
         // A14 of the address selects a 16-KiB PRG-ROM bank
         // A14=0 selects the lower bank $8000-BFFF
         // A14=1 selects the upper bank $C000-FFFF
-        return banks.program[a14][al + (ah << 8)]
+        return banks.program[a14][al + (ah << 8) & 0x3fff]
       },
 
       write(al, ah, d) {
@@ -38,7 +38,7 @@ async function allocate(rom) {
 
     graphics: {
       read(al, ah) {
-        return banks.graphics[al + (ah << 8)]
+        return banks.graphics[al + (ah << 8) & 0x1fff]
       },
 
       write(al, ah, d) {
