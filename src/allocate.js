@@ -1,49 +1,61 @@
 import deserialize from '@esnes/ines2-header'
 import uploadAsArrayBuffer from './upload-as-array-buffer.js'
 
+function* prgrom(rom) {
+  while (true) {
+    yield [
+      rom.subarray(0, 0x4000),
+      rom.subarray(rom.length - 0x4000, rom.length)
+    ]
+  }
+}
+
+function* chrrom(rom) {
+  while (true) {
+    yield [
+      rom.subarray(0, 0x2000)
+    ]
+  }
+}
+
+function* program(rom) {
+  for (const swap of prgrom(rom)) {
+    yield (al, ah) => {
+      const a14 = (ah >> 6) & 0x01
+
+      // A14=0 is the lower bank $8000-BFFF
+      // A14=1 is the upper bank $C000-FFFF
+      return swap[a14][al + (ah << 8) & 0x3fff]
+    }
+  }
+}
+
+function* graphics(rom) {
+  for (const swap of chrrom(rom)) {
+    yield (al, ah) => swap[0][al + (ah << 8) & 0x1fff]
+  }
+}
+
+function bus({value}, write) {
+  return {read: value, write}
+}
+
 export default
 async function allocate(rom) {
-  const data = await uploadAsArrayBuffer(rom)
-  const header = new Uint8ClampedArray(data, 0, 16)
+  const rom = await uploadAsArrayBuffer(rom)
+  const header = new Uint8ClampedArray(rom, 0, 16)
   const {size} = deserialize(header)
-
-  const prgrom = new Uint8ClampedArray(data, 16, size.program)
-  const chrrom = new Uint8ClampedArray(data, 16 + size.program, size.graphics)
-
-  const banks = {
-    program: [
-      prgrom.subarray(0, 0x4000),
-      prgrom.subarray(prgrom.length - 0x4000, prgrom.length)
-    ],
-    graphics: chrrom.subarray(0, 0x2000)
+  const prgrom = new Uint8ClampedArray(rom, 16, size.program)
+  const chrrom = new Uint8ClampedArray(rom, 16 + size.program, size.graphics)
+  const mapper = {
+    prgrom: program(prgrom),
+    chrrom: graphics(chrrom)
   }
 
   console.log(deserialize(header))
 
-  return {
-    program: {
-      read(al, ah) {
-        const a14 = (ah >> 6) & 1
-
-        // A14 of the address bus selects a 16-KiB ROM bank
-        // A14=0 selects lower PRG-ROM $8000-BFFF
-        // A14=1 selects upper PRG-ROM $C000-FFFF
-        return banks.program[a14][al + (ah << 8) & 0x3fff]
-      },
-
-      write(al, ah, d) {
-        // TODO
-      }
-    },
-
-    graphics: {
-      read(ad, a) {
-        return banks.graphics[ad + (a << 8) & 0x1fff]
-      },
-
-      write(ad, a, d) {
-        // TODO
-      }
-    }
+  return { // fixme wtf
+    program: {value: read} = mapper.prgrom.next(d),
+    graphics: {value: read} = mapper.chrrom.next(d)
   }
 }
