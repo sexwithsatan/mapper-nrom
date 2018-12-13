@@ -27,7 +27,7 @@ async function allocate(rom) {
   return {
     program: {
       read(al, ah) {
-        const a14 = (ah >> 6) & 1
+        const a14 = (ah >>> 6) & 1
 
         // A14 of the address selects a 16-KiB PRG-ROM bank:
         //  A14=0 selects the lower bank $8000-$BFFF
@@ -42,7 +42,7 @@ async function allocate(rom) {
 
     graphics: {
       read(al, ah) {
-        const a12 = (ah >> 4) & 1
+        const a12 = (ah >>> 4) & 1
         
         // A12 of the address selects one half of the pattern table:
         //  A12=0 selects the left half $0000-$0FFF
