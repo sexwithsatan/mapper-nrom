@@ -1,9 +1,9 @@
 import deserialize from '@esnes/ines2-header'
-import uploadAsArrayBuffer from './upload-as-array-buffer.js'
+import readAsArrayBuffer from './read-as-array-buffer.js'
 
 export default
 async function allocate(rom) {
-  const data = await uploadAsArrayBuffer(rom)
+  const data = await readAsArrayBuffer(rom)
   const header = new Uint8ClampedArray(data, 0, 16)
   const {size} = deserialize(header)
 
