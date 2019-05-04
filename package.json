@@ -1,5 +1,5 @@
 {
-  "name": "@esnes/nes-nrom",
+  "name": "@esnes/mapper-nrom",
   "version": "0.1.0",
   "module": "index.js",
   "devDependencies": {
