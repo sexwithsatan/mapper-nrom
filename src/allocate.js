@@ -23,8 +23,6 @@ async function allocate(rom) {
     ]
   })
 
-  console.log(deserialize(header))
-
   return ({
     program: [
       function read(address) {
