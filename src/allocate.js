@@ -11,23 +11,23 @@ async function allocate(rom) {
   const prgrom = new Uint8ClampedArray(buffer, 0x10, size.program)
   const chrrom = new Uint8ClampedArray(buffer, 0x10 + size.program, size.graphics)
 
-  const banks = Object.freeze({
-    program: Object.seal([
+  const banks = ({
+    program: [
 /* CPU $8000 */prgrom.subarray(0, 0x4000),
 /* CPU $C000 */prgrom.subarray(size.program - 0x4000, size.program)
-    ]),
+    ],
 
-    graphics: Object.seal([
+    graphics: [
 /* PPU $0000 */chrrom.subarray(0x0000, 0x1000),
 /* PPU $1000 */chrrom.subarray(0x1000, 0x2000)
-    ])
+    ]
   })
 
   console.log(deserialize(header))
 
-  return Object.freeze({
-    program: Object.freeze({
-      read(address) {
+  return ({
+    program: [
+      function read(address) {
         const a14 = (address >>> 14) & 1
 
         // A14 of the address selects a 16-KiB PRG-ROM bank:
@@ -36,13 +36,13 @@ async function allocate(rom) {
         return banks.program[a14][address & 0x3fff]
       },
 
-      write(address, data) {
+      function write(address, data) {
         // TODO
       }
-    }),
+    ],
 
-    graphics: Object.freeze({
-      read(address) {
+    graphics: [
+      function read(address) {
         const a12 = (address >>> 12) & 1
         
         // A12 of the address selects one half of the pattern table:
@@ -51,9 +51,9 @@ async function allocate(rom) {
         return banks.graphics[a12][address & 0x0fff]
       },
 
-      write(address, data) {
+      function write(address, data) {
         // TODO
       }
-    })
+    ]
   })
 }
